@@ -21,27 +21,32 @@ def display_map(df, year):
     df = df[df['Year'] == year] 
     
     map = folium.Map(location=[38, -96.5], zoom_start=4, scrollWheelZoom=False, tiles='CartoDB positron')
-    
-    choropleth = folium.Choropleth(
-        geo_data='data/us-state-boundaries.geojson',
-        data=df,
-        columns=('LocationDesc', 'Overall_Overall'),
-        key_on='feature.properties.name',
-        line_opacity=0.8,
-        highlight=True
-    )
-    choropleth.geojson.add_to(map)
-    
-    df_indexed = df.set_index('LocationDesc')
-    for feature in choropleth.geojson.data['features']:
-        state_name = feature['properties']['name']
-        feature['properties']['mortality_rate'] = 'Overall_Overall: ' + '{:,}'.format(df_indexed.loc[state_name, 'Overall_Overall'][0]) if state_name in list(df_indexed.index) else ''
-        feature['properties']['life_expectancy'] = 'Life_Expectancy: ' + str(round(df_indexed.loc[state_name, 'Life_Expectancy'][0])) if state_name in list(df_indexed.index) else ''
-
-    choropleth.geojson.add_child(
-        folium.features.GeoJsonTooltip(['name', 'mortality_rate', 'life_expectancy'], labels=False)
-    )
     st_map = st_folium(map, width=700, height=450) 
+    
+    st.write(df.shape)
+    st.write(df.head())
+    st.write(df.columns)
+    
+    # choropleth = folium.Choropleth(
+    #     geo_data='data/us-state-boundaries.geojson',
+    #     data=df,
+    #     columns=('LocationDesc', 'Overall_Overall'),
+    #     key_on='feature.properties.name',
+    #     line_opacity=0.8,
+    #     highlight=True
+    # )
+    # choropleth.geojson.add_to(map)
+    
+    # df_indexed = df.set_index('LocationDesc')
+    # for feature in choropleth.geojson.data['features']:
+    #     state_name = feature['properties']['name']
+    #     feature['properties']['mortality_rate'] = 'Overall_Overall: ' + '{:,}'.format(df_indexed.loc[state_name, 'Overall_Overall'][0]) if state_name in list(df_indexed.index) else ''
+    #     feature['properties']['life_expectancy'] = 'Life_Expectancy: ' + str(round(df_indexed.loc[state_name, 'Life_Expectancy'][0])) if state_name in list(df_indexed.index) else ''
+
+    # choropleth.geojson.add_child(
+    #     folium.features.GeoJsonTooltip(['name', 'mortality_rate', 'life_expectancy'], labels=False)
+    # )
+    # st_map = st_folium(map, width=700, height=450) 
     
 
 def main():
@@ -71,6 +76,8 @@ def main():
     for col, (field_name, metric_title) in zip(cols, metrics_info):
         with col:
             display_mortality_fact(df_mortality, year, state_name, disease_type, field_name, metric_title)
+    
+    display_map(df_mortality, year)
 
 if __name__ == "__main__":
     main()
