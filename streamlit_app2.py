@@ -20,8 +20,8 @@ def main():
     df = df[(df['Year'] == year) & (df['Disease_Type'] == disease_type)] 
     if state_name:
         df = df[df['LocationDesc'] == state_name]
-    value = df[field_name]
-    st.metric(metric_title, '{:,}'.format(value))
+    value = df[field_name].iloc[0]  # Extracting the first value from the Series
+    st.metric(metric_title, value)
     
     st.write(df.shape)
     st.write(df.head())
