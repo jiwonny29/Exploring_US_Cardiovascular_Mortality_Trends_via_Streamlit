@@ -21,21 +21,22 @@ def display_map(df, year):
     df = df[df['Year'] == year] 
     
     map = folium.Map(location=[38, -96.5], zoom_start=4, scrollWheelZoom=False, tiles='CartoDB positron')
+    
+    choropleth = folium.Choropleth(
+        geo_data='data/us-state-boundaries.geojson',
+        data=df,
+        columns=('LocationDesc', 'Overall_Overall'),
+        key_on='feature.properties.name',
+        line_opacity=0.8,
+        highlight=True
+    )
+    choropleth.geojson.add_to(map)
+    
     st_map = st_folium(map, width=700, height=450) 
     
     st.write(df.shape)
     st.write(df.head())
-    st.write(df.columns)
     
-    # choropleth = folium.Choropleth(
-    #     geo_data='data/us-state-boundaries.geojson',
-    #     data=df,
-    #     columns=('LocationDesc', 'Overall_Overall'),
-    #     key_on='feature.properties.name',
-    #     line_opacity=0.8,
-    #     highlight=True
-    # )
-    # choropleth.geojson.add_to(map)
     
     # df_indexed = df.set_index('LocationDesc')
     # for feature in choropleth.geojson.data['features']:
