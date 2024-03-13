@@ -15,7 +15,7 @@ def display_time_filters(df):
     return year 
 
 def display_state_filter(df, state_name):
-    state_list = [''] + list(df['State Name'].unique())
+    state_list = [''] + list(df['LocationDesc'].unique())
     state_list.sort()
     state_index = state_list.index(state_name) if state_name and state_name in state_list else 0 
     return st.sidebar.selectbox('State', state_list, state_index)
