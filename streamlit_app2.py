@@ -9,13 +9,24 @@ def main():
     st.title(APP_TITLE)
     st.caption(APP_SUB_TITLE)
     
-    df = pd.read_csv('data/final.csv')
+    df = pd.read_csv('data/pivoted_data.csv')
+    
+    year = 2020
+    state_name = 'Texas'
+    disease_type = 0 
+    field_name = 'Age_65+'
+    metric_title = 'Mortality Rate'
+        
+    df = df[(df['Year'] == year) & (df['Disease_Type'] == disease_type)] 
+    if state_name:
+        df = df[df['LocationDesc'] == state_name]
+    value = df[field_name]
+    st.metric(metric_title, '{:,}'.format(value))
     
     st.write(df.shape)
     st.write(df.head())
     st.write(df.columns)
-    
-
+        
 
 if __name__ == "__main__":
     main()
