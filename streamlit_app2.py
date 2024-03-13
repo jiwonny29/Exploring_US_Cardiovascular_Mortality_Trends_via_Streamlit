@@ -31,7 +31,10 @@ def display_map(df, year):
         highlight=True
     )
     choropleth.geojson.add_to(map)
-    
+    choropleth.geojson.add_child(
+        folium.features.GeoJsonTooltip(['name', 'mortality_rate', 'life_expectancy'], labels=False)
+    )
+     
     st_map = st_folium(map, width=700, height=450) 
     
     st.write(df.shape)
@@ -43,11 +46,6 @@ def display_map(df, year):
     #     state_name = feature['properties']['name']
     #     feature['properties']['mortality_rate'] = 'Overall_Overall: ' + '{:,}'.format(df_indexed.loc[state_name, 'Overall_Overall'][0]) if state_name in list(df_indexed.index) else ''
     #     feature['properties']['life_expectancy'] = 'Life_Expectancy: ' + str(round(df_indexed.loc[state_name, 'Life_Expectancy'][0])) if state_name in list(df_indexed.index) else ''
-
-    # choropleth.geojson.add_child(
-    #     folium.features.GeoJsonTooltip(['name', 'mortality_rate', 'life_expectancy'], labels=False)
-    # )
-    # st_map = st_folium(map, width=700, height=450) 
     
 
 def main():
