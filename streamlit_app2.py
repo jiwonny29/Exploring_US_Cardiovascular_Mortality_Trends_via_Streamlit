@@ -7,15 +7,36 @@ from streamlit_folium import st_folium
 APP_TITLE = "title"
 APP_SUB_TITLE = 'subtitle'
 
+def display_time_filters(df):
+    year_list = list(df['Year'].unique())
+    year_list.sort()
+    year = st.sidebar.selectbox('Year', year_list, len(year_list) - 1)
+    st.header(f'{year}')
+    return year 
 
-def display_mortality_fact(df, year, state_name, disease_type, field_name, metric_title):
-    filtered_df = df[(df['Year'] == year) & (df['Disease_Type'] == disease_type)]
-    if state_name:
-        filtered_df = filtered_df[filtered_df['LocationDesc'] == state_name]
-    
-    value = filtered_df[field_name].iloc[0] if not filtered_df[field_name].empty else "N/A"
-    st.metric(metric_title, value)
-    
+def display_state_filter(df, state_name):
+    state_list = [''] + list(df['State Name'].unique())
+    state_list.sort()
+    state_index = state_list.index(state_name) if state_name and state_name in state_list else 0 
+    return st.sidebar.selectbox('State', state_list, state_index)
+
+def display_report_type_filter():
+    report_types = st.sidebar.multiselect('Report Types', ['Overall', 'Sex', 'Age'])
+    selected_options = []
+
+    if 'Sex' in report_types:
+        selected_sex = st.sidebar.multiselect('Select Sex', ['Male', 'Female'], ['Male', 'Female'])
+        selected_options.extend(selected_sex)
+
+    if 'Age' in report_types:
+        age_options = ['Age 18-24', 'Age 25-44', 'Age 45-64', 'Age 65+']
+        selected_age = st.sidebar.multiselect('Select Age Group', age_options, age_options)
+        selected_options.extend(selected_age)
+
+    if 'Overall' in report_types:
+        selected_options.append('Overall')
+
+    return selected_options
     
 def display_map(df, year):
     df = df[df['Year'] == year] 
@@ -32,13 +53,11 @@ def display_map(df, year):
     )
     choropleth.geojson.add_to(map)
     
-    df = df.set_index('LocationDesc')
-    state_name = 'North Carolina'
-    
+    df_indexed = df.set_index('LocationDesc')
     for feature in choropleth.geojson.data['features']:
         state_name = feature['properties']['name']
-        feature['properties']['mortality_rate'] = 'Overall_Overall: ' + '{:,}'.format(df_indexed.loc[state_name, 'Overall_Overall'][0]) if state_name in list(df_indexed.index) else ''
-        feature['properties']['life_expectancy'] = 'Life_Expectancy: ' + str(round(df_indexed.loc[state_name, 'Life_Expectancy'][0])) if state_name in list(df_indexed.index) else ''
+        feature['properties']['mortality_rate'] = 'Mortality/100K Population: ' + '{:,}'.format(df_indexed.loc[state_name, 'Overall_Overall'][0]) if state_name in list(df_indexed.index) else ''
+        feature['properties']['life_expectancy'] = 'Life Expectancy: ' + str(round(df_indexed.loc[state_name, 'Life_Expectancy'][0])) if state_name in list(df_indexed.index) else ''
     
     choropleth.geojson.add_child(
         folium.features.GeoJsonTooltip(['name', 'mortality_rate', 'life_expectancy'], labels=False)
@@ -46,10 +65,19 @@ def display_map(df, year):
     
     st_map = st_folium(map, width=700, height=450) 
     
-    st.write(df.shape)
-    st.write(df.head())
-    
+    state_name = ''
+    if st_map['last_active_drawing']:
+        state_name = st_map['last_active_drawing']['properties']['name']
+    return state_name
 
+def display_mortality_fact(df, year, state_name, disease_type, field_name, metric_title):
+    filtered_df = df[(df['Year'] == year) & (df['Disease_Type'] == disease_type)]
+    if state_name:
+        filtered_df = filtered_df[filtered_df['LocationDesc'] == state_name]
+    
+    value = filtered_df[field_name].iloc[0] if not filtered_df[field_name].empty else "N/A"
+    st.metric(metric_title, value)  
+    
 def main():
     st.set_page_config(APP_TITLE)
     st.title(APP_TITLE)
@@ -79,6 +107,7 @@ def main():
             display_mortality_fact(df_mortality, year, state_name, disease_type, field_name, metric_title)
     
     display_map(df_mortality, year)
+
 
 if __name__ == "__main__":
     main()
