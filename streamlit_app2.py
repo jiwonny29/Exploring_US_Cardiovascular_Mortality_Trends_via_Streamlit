@@ -25,27 +25,29 @@ def display_map(df, year):
     choropleth = folium.Choropleth(
         geo_data='data/us-state-boundaries.geojson',
         data=df,
-        columns=('LocationDesc', 'Overall_Overall'),
+        columns=('LocationDesc', 'Overall_Overall', 'Life_Expectancy'),
         key_on='feature.properties.name',
         line_opacity=0.8,
         highlight=True
     )
     choropleth.geojson.add_to(map)
+    
+    df = df.set_index('LocationDesc')
+    state_name = 'North Carolina'
+    
+    for feature in choropleth.geojson.data['features']:
+        state_name = feature['properties']['name']
+        feature['properties']['mortality_rate'] = 'Overall_Overall: ' + '{:,}'.format(df_indexed.loc[state_name, 'Overall_Overall'][0]) if state_name in list(df_indexed.index) else ''
+        feature['properties']['life_expectancy'] = 'Life_Expectancy: ' + str(round(df_indexed.loc[state_name, 'Life_Expectancy'][0])) if state_name in list(df_indexed.index) else ''
+    
     choropleth.geojson.add_child(
         folium.features.GeoJsonTooltip(['name', 'mortality_rate', 'life_expectancy'], labels=False)
     )
-     
+    
     st_map = st_folium(map, width=700, height=450) 
     
     st.write(df.shape)
     st.write(df.head())
-    
-    
-    # df_indexed = df.set_index('LocationDesc')
-    # for feature in choropleth.geojson.data['features']:
-    #     state_name = feature['properties']['name']
-    #     feature['properties']['mortality_rate'] = 'Overall_Overall: ' + '{:,}'.format(df_indexed.loc[state_name, 'Overall_Overall'][0]) if state_name in list(df_indexed.index) else ''
-    #     feature['properties']['life_expectancy'] = 'Life_Expectancy: ' + str(round(df_indexed.loc[state_name, 'Life_Expectancy'][0])) if state_name in list(df_indexed.index) else ''
     
 
 def main():
