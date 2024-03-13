@@ -37,6 +37,22 @@ def display_report_type_filter():
         selected_options.append('Overall')
 
     return selected_options
+
+def display_disease_type_filter():
+    disease_type_dict = {
+        0: "Major Cardiovascular Disease",
+        1: "Heart Disease",
+        2: "Acute Myocardial Infarction",
+        3: "Coronary Heart Disease",
+        4: "Heart Failure",
+        5: "Cerebrovascular Disease",
+        6: "Ischemic Stroke",
+        7: "Hemorrhagic Stroke"
+    }
+    disease_type_options = list(disease_type_dict.values())
+    disease_type_index = st.sidebar.selectbox('Disease Type', range(len(disease_type_options)), format_func=lambda x: disease_type_dict[x])
+    return disease_type_index
+    
     
 def display_map(df, year):
     df = df[df['Year'] == year] 
@@ -94,6 +110,7 @@ def main():
     state_name = display_map(df_mortality, year)
     state_name = display_state_filter(df_mortality, state_name)
     report_type = display_report_type_filter()
+    disease_type = display_disease_type_filter()
     
     # Display Metrics 
     st.subheader(f'{state_name} Mortality Facts' if state_name else 'Mortality Facts')
