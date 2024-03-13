@@ -85,12 +85,19 @@ def main():
 
     df_mortality = pd.read_csv('data/pivoted_data.csv')
 
-    year = 2020
-    state_name = ''  # Adjust as needed
-    disease_type = 0  # Adjust as needed
-
+    # year = 2020
+    # state_name = ''  # Adjust as needed
+    # disease_type = 0  # Adjust as needed
+    
+    # Display Filters and Map
+    year = display_time_filters(df_mortality)
+    state_name = display_map(df_mortality, year)
+    state_name = display_state_filter(df_mortality, state_name)
+    report_type = display_report_type_filter()
+    
     # Display Metrics 
     st.subheader(f'{state_name} Mortality Facts' if state_name else 'Mortality Facts')
+    
     cols = st.columns(7)
     metrics_info = [
         ('Age_18-24', 'Age 18-24 Mortality Rate'),
@@ -102,10 +109,26 @@ def main():
         ('Overall_Overall', 'Overall Mortality Rate')
     ]
 
-    for col, (field_name, metric_title) in zip(cols, metrics_info):
-        with col:
-            display_mortality_fact(df_mortality, year, state_name, disease_type, field_name, metric_title)
+    # for col, (field_name, metric_title) in zip(cols, metrics_info):
+    #     with col:
+    #         display_mortality_fact(df_mortality, year, state_name, disease_type, field_name, metric_title)
     
+    # display_map(df_mortality, year)
+
+    num_cols_per_row = 4
+    num_metrics = len(metrics_info)
+    num_rows = (num_metrics + num_cols_per_row - 1) // num_cols_per_row  # Calculate the number of rows needed
+
+    for i in range(num_rows):
+        cols = st.columns(num_cols_per_row)
+        for j in range(num_cols_per_row):
+            idx = i * num_cols_per_row + j
+            if idx < num_metrics:
+                with cols[j]:
+                    field_name, metric_title = metrics_info[idx]
+                    display_mortality_fact(df_mortality, year, state_name, disease_type, field_name, metric_title)
+    
+    display_map(df_mortality, year)
     display_map(df_mortality, year)
 
 
