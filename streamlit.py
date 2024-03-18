@@ -25,13 +25,13 @@ def display_time_filters(df):
     return year
 
 
-def display_state_filter(df, state_name):
+def display_state_filter(df):
     state_list = list(df["LocationDesc"].unique())
     state_list.sort()
-    state_index = (
-        state_list.index(state_name) if state_name and state_name in state_list else 0
-    )
-    return st.sidebar.selectbox("State", state_list, state_index)
+    state_name = st.sidebar.selectbox(
+        "State", state_list, 0
+    )  # Changed default index to 0
+    return state_name
 
 
 def display_disease_type_filter():
@@ -158,12 +158,13 @@ def plot_state_mortality_trend(df, state_name, disease_type):
 
     # Update layout
     fig.update_layout(
-        title=f"Trend of Overall Mortality Rate (2000-2020) for {state_name} <br>{disease_name}",
-        title_font_size=28,
         xaxis_title="Year",
         yaxis_title="Mortality Rate (per 100K population)",
         hovermode="x",  # Show hover information for nearest data point
         showlegend=False,  # Hide legend
+        width=700,  # Adjust width of the plot
+        height=450,  # Adjust height of the plot
+        margin=dict(l=20, r=20, t=20, b=20),  # Adjust margin
     )
     st.plotly_chart(fig)
 
@@ -178,13 +179,9 @@ def main():
 
     # Display Filters and Map
     year = display_time_filters(df_mortality)
-    state_name = display_map(df_mortality, year, geojson)
-    state_name = display_state_filter(df_mortality, state_name)
+    state_name = display_state_filter(df_mortality)  # Removed state_name argument
     disease_type = display_disease_type_filter()
-    
-    st.subheader(f"Trend of Overall Mortality Rate (2000-2020)")
-    plot_state_mortality_trend(df_mortality, state_name, disease_type)
-    
+
     disease_type_dict = {
         0: "Major Cardiovascular Disease",
         1: "Heart Disease",
@@ -235,6 +232,10 @@ def main():
                         metric_title,
                     )
 
+    # Plot overall mortality trend
+    st.markdown(f"### Trend of Overall Mortality Rate for {state_name} ({disease_type_dict[disease_type]})")
+    plot_state_mortality_trend(df_mortality, state_name, disease_type)
+
     # Assuming state_name and year are already defined
     st.subheader(f"{state_name} Population")
     filtered_df = df_mortality[
@@ -252,7 +253,9 @@ def main():
     # Using st.metric with a label
     life_expectancy_rounded = round(life_expectancy, 1)
     st.metric(label=f"Life Expectancy in {year}", value=life_expectancy_rounded)
-    
+
+    # Display map
+    st.subheader(f"Comparison of Major CVD Mortality Rate Across States")
     display_map(df_mortality, year, geojson)
 
 
