@@ -2,9 +2,10 @@ import streamlit as st
 import pandas as pd
 import folium
 from streamlit_folium import st_folium
-import matplotlib.pyplot as plt
-import uuid
 import json
+import plotly.express as px
+import plotly.graph_objects as go
+
 
 APP_TITLE = "US Cardiovascular Mortality Rates Analysis"
 APP_SUB_TITLE = "Data Source: National Vital Statistics System"
@@ -122,22 +123,49 @@ def display_mortality_fact(
         value = "{:,.0f}".format(value)
 
     st.metric(metric_title, value)
-    
-    
-def plot_overall_mortality_trend(df, disease_type):
-    plt.figure(figsize=(10, 6))
 
-    for year in range(2000, 2021):
-        filtered_df = df[(df["Year"] == year) & (df["Disease_Type"] == disease_type)]
-        overall_mortality_rate = filtered_df["Overall_Overall"].mean()
-        plt.scatter(year, overall_mortality_rate, color='blue')
 
-    plt.plot(range(2000, 2021), df[df["Disease_Type"] == disease_type].groupby("Year")["Overall_Overall"].mean(), color='red')
-    plt.title(f"Overall Mortality Rate Trend for {disease_type}")
-    plt.xlabel("Year")
-    plt.ylabel("Overall Mortality Rate")
-    plt.grid(True)
-    st.pyplot(plt)
+def plot_state_mortality_trend(df, state_name, disease_type):
+    disease_type_dict = {
+        0: "Major Cardiovascular Disease",
+        1: "Heart Disease",
+        2: "Acute Myocardial Infarction",
+        3: "Coronary Heart Disease",
+        4: "Heart Failure",
+        5: "Cerebrovascular Disease",
+        6: "Ischemic Stroke",
+        7: "Hemorrhagic Stroke",
+    }
+    disease_name = disease_type_dict[disease_type]
+
+    # Filter the data for the selected state and disease type
+    state_data = df[
+        (df["LocationDesc"] == state_name) & (df["Disease_Type"] == disease_type)
+    ]
+    state_data = state_data.groupby("Year")["Overall_Overall"].mean().reset_index()
+    state_data["Year"] = state_data["Year"].astype(int)  # Convert years to int
+
+    # Create an interactive line plot with Plotly
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=state_data["Year"],
+            y=state_data["Overall_Overall"],
+            mode="lines+markers",
+            name="",
+        )
+    )
+
+    # Update layout
+    fig.update_layout(
+        title=f"Trend of Overall Mortality Rate (2000-2020) for {state_name} <br>{disease_name}",
+        title_font_size=28,
+        xaxis_title="Year",
+        yaxis_title="Mortality Rate (per 100K population)",
+        hovermode="x",  # Show hover information for nearest data point
+        showlegend=False,  # Hide legend
+    )
+    st.plotly_chart(fig)
 
 
 def main():
@@ -223,7 +251,7 @@ def main():
     st.metric(label=f"Life Expectancy in {year}", value=life_expectancy_rounded)
 
     # Plot overall mortality trend
-    plot_overall_mortality_trend(df_mortality, disease_type)
+    plot_state_mortality_trend(df_mortality, state_name, disease_type)
 
 
 if __name__ == "__main__":
