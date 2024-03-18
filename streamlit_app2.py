@@ -186,11 +186,24 @@ def main():
                         field_name,
                         metric_title,
                     )
-                                    
+
+    # Assuming state_name and year are already defined
     st.subheader(f"{state_name} Population")
-    filtered_df = df_mortality[(df_mortality['LocationDesc'] == state_name) & (df_mortality['Year'] == year)]
-    population = filtered_df.iloc[0]['population']
-    st.metric(population)
+    filtered_df = df_mortality[
+        (df_mortality["LocationDesc"] == state_name) & (df_mortality["Year"] == year)
+    ]
+    population = filtered_df.iloc[0]["population"]
+
+    # Using st.metric with a label
+    st.metric(label=f"Population in {year}", value=population)
+
+    # Assuming state_name and year are already defined
+    st.subheader(f"{state_name} Life Expectancy at Birth")
+    life_expectancy = filtered_df.iloc[0]["Life_Expectancy"]
+
+    # Using st.metric with a label
+    life_expectancy_rounded = round(life_expectancy, 1)
+    st.metric(label=f"Life Expectancy in {year}", value=life_expectancy_rounded)
 
 
 if __name__ == "__main__":
