@@ -81,7 +81,9 @@ def display_map(df, year, geojson):
         state_name = feature["properties"]["name"]
         feature["properties"]["mortality_rate"] = (
             "Mortality/100K Population: "
-            + "{:,}".format(df_indexed.loc[state_name, "Overall_Overall"].iloc[0])
+            + "{:,.0f}".format(
+                round(df_indexed.loc[state_name, "Overall_Overall"].iloc[0])
+            )
             if state_name in list(df_indexed.index)
             else ""
         )
@@ -114,6 +116,10 @@ def display_mortality_fact(
     value = (
         filtered_df[field_name].iloc[0] if not filtered_df[field_name].empty else "N/A"
     )
+
+    if isinstance(value, (int, float)):
+        value = "{:,.0f}".format(value)
+
     st.metric(metric_title, value)
 
 
